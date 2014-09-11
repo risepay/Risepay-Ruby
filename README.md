@@ -23,9 +23,15 @@ You can request developer credentials from our <a href='http://sales.risepay.com
 
 ### Initialization
 
-To utilize, install <a href="http://rubyonrails.org/download/">ruby on rails</a>
+To utilize, install the gem
+
+    gem install risepay
   
-  gem install rails
+go to the console and put that simple line of code 
+
+include the library on your proyect:
+
+    require_relative 'risepays.rb'
 
   
 ### Sale Transaction

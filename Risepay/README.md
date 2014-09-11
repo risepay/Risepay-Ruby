@@ -23,9 +23,15 @@ You can request developer credentials from our <a href='http://sales.risepay.com
 
 ### Initialization
 
-To utilize, install <a href="http://rubyonrails.org/download/">ruby on rails</a>
+To utilize, install the gem
+
+    gem install risepay
   
-  gem install rails
+go to the console and put that simple line of code 
+
+include the library on your proyect:
+
+    require_relative 'risepays.rb'
 
   
 ### Sale Transaction
@@ -107,7 +113,7 @@ data['CardNum']="4111111111111111";
 data['ExpDate']="1215";
 data['Amount']="10";
 data['CVNum']="734";
-$data['PNRef'] = "24324";
+data['PNRef'] = "24324";
 
 @result =  @risepay.void(data)
 
@@ -141,7 +147,7 @@ data['CardNum']="4111111111111111";
 data['ExpDate']="1215";
 data['Amount']="10";
 data['CVNum']="734";
-$data['PNRef'] = "24324";
+data['PNRef'] = "24324";
 
 @result =  @risepay.capture(data)
 
@@ -175,7 +181,7 @@ data['CardNum']="4111111111111111";
 data['ExpDate']="1215";
 data['Amount']="10";
 data['CVNum']="734";
-$data['PNRef'] = "24324";
+data['PNRef'] = "24324";
 
 @result =  @risepay.return_trans(data)
 
