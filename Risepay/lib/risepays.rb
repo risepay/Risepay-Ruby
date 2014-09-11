@@ -27,7 +27,6 @@ require 'time'
 require 'active_support'
 
 
-
 class Risepays
 
 	attr_accessor :UserName, :Password, :url, :defFileds, :info, :RespMSG, :formData
@@ -37,17 +36,17 @@ class Risepays
 		@UserName = user;
 		@Password = pass;
 		@defFileds = ['TransType', 'NameOnCard','CardNum','ExpDate','Amount','CVNum','InvNum',
-                               'Zip','Street', 'MagData', 'Amount','PNRef'];
-    
-    	@formData = [];
-    	@url ="https://gateway1.risepay.com/ws/transact.asmx/ProcessCreditCard"
-    	@amountFields = ['Amount', 'TipAmt', 'TaxAmt'];
-    	
+			'Zip','Street', 'MagData', 'Amount','PNRef'];
+
+		@formData = [];
+		@url ="https://gateway1.risepay.com/ws/transact.asmx/ProcessCreditCard"
+		@amountFields = ['Amount', 'TipAmt', 'TaxAmt'];
+
 
 	end 	
 
 	def get_gateway_url()
-		
+
 		return @url 
 	end
 
@@ -60,20 +59,17 @@ class Risepays
 		return @defFileds
 	end
 
-
-
 	def amountConvert(num)
 		amount = '%.2f' % num
 		return amount
-	end;
+	end
 
-	
 
 	def sale(opt = null)
 		if opt
-			
+
 			@formData = opt
-			
+
 		end
 
 		@formData["TransType"]="Sale"
@@ -85,8 +81,8 @@ class Risepays
 
 	def auth(opt = null)
 
-	    if opt
-	    	
+		if opt
+
 			@formData = opt			
 		end
 
@@ -99,7 +95,7 @@ class Risepays
 	def returnTrans(opt = null)
 
 		if opt
-			
+
 			@formData = opt
 		end	
 
@@ -107,12 +103,12 @@ class Risepays
 
 		return prepare()
 	end
-		
+	
 
 	def void(opt = null)
 
 		if opt
-			
+
 			@formData = opt
 		end
 
@@ -152,19 +148,19 @@ class Risepays
 		#Construct ExtData
 		@formData.each do |f , value|
 			if !((@defFileds).include? f)
-				 
-			 	 @data['ExtData']<< "<#{f}>#{value}</#{f}>";
-				 @formData.delete(f)
+
+				@data['ExtData']<< "<#{f}>#{value}</#{f}>";
+				@formData.delete(f)
 			else
 				@data[f] = value;
-			
+
 			end
 		end
 
 		# set defaults fields
 		@defFileds.each do |f|
 			if @data[f] == 	nil
-			   	@data[f] = '';
+				@data[f] = '';
 			end 
 		end
 
@@ -180,16 +176,16 @@ class Risepays
 		s = s.match(/([,=0-9a-zA-Z]*)(\<.*\>)?/)
 		@str = s[1]
 		@str2 = s[2]
-	
 
-    	@str.split(",").each do |f|
+
+		@str.split(",").each do |f|
 			arr = f.split('=');
 			arr[1] && (obj[arr[0]] = arr[1])
-        end
+		end
 
         #Process XML Part
 
-		@xmldata = Hash.from_xml(@str2)
+        @xmldata = Hash.from_xml(@str2)
 
         
         if @xmldata
@@ -197,43 +193,43 @@ class Risepays
         		obj[x] = @xmldata[x]
         	end
         end
-       
+
         @jsonlist = ['xmlns:xsd', 'xmlns:xsi', 'xmlns', 'ExtData']
         
         @jsonlist.each do |j|
-            obj.delete(j)
-            
+        	obj.delete(j)
+
         end	
 
         return obj
 	end
 
 
-	def post(opts)
-	
-	uri = URI.parse(@url)
+    def post(opts)
 
-    http = Net::HTTP.new(uri.host, uri.port)
-    http.verify_mode = OpenSSL::SSL::VERIFY_NONE
-    http.use_ssl = (uri.scheme == "https")
-    request = Net::HTTP::Post.new(uri.request_uri)
+    	uri = URI.parse(@url)
 
-    request.set_form_data(opts);
+    	http = Net::HTTP.new(uri.host, uri.port)
+    	http.verify_mode = OpenSSL::SSL::VERIFY_PEER
+    	http.use_ssl = (uri.scheme == "https")
+    	request = Net::HTTP::Post.new(uri.request_uri)
 
-    response = http.request(request)
-    xml= response.body
-    session = Hash.from_xml(xml)
-    res = session['Response']
-    json = convert_response(res);
+    	request.set_form_data(opts);
 
-	approved = false
-	if(json['Result'] == "0")
-		approved = true;
-		
-	end
-	json['Approved']=approved
-	return json
+    	response = http.request(request)
+    	xml= response.body
+    	session = Hash.from_xml(xml)
+    	res = session['Response']
+    	json = convert_response(res);
 
-	end
+    	approved = false
+    	if(json['Result'] == "0")
+    		approved = true;
+
+    	end
+    	json['Approved']=approved
+    	return json
+
+    end
 
 end

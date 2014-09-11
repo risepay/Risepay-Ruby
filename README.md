@@ -107,7 +107,7 @@ data['CardNum']="4111111111111111";
 data['ExpDate']="1215";
 data['Amount']="10";
 data['CVNum']="734";
-$data['PNRef'] = "24324";
+data['PNRef'] = "24324";
 
 @result =  @risepay.void(data)
 
@@ -141,7 +141,7 @@ data['CardNum']="4111111111111111";
 data['ExpDate']="1215";
 data['Amount']="10";
 data['CVNum']="734";
-$data['PNRef'] = "24324";
+data['PNRef'] = "24324";
 
 @result =  @risepay.capture(data)
 
@@ -175,7 +175,7 @@ data['CardNum']="4111111111111111";
 data['ExpDate']="1215";
 data['Amount']="10";
 data['CVNum']="734";
-$data['PNRef'] = "24324";
+data['PNRef'] = "24324";
 
 @result =  @risepay.return_trans(data)
 
