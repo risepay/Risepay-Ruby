@@ -1,7 +1,7 @@
-require_relative 'risepays.rb'
+require_relative '../../lib/risepays.rb'
 
 
-class TestController
+class TestController < ApplicationController
   def index
   	data ={}
 
