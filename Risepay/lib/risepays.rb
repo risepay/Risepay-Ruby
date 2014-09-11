@@ -25,7 +25,7 @@ require 'ostruct'
 require 'date'
 require 'time'
 require 'active_support'
-#require 'json'
+
 
 
 class Risepays
@@ -197,19 +197,13 @@ class Risepays
         		obj[x] = @xmldata[x]
         	end
         end
-        obj.delete("['BatchNum':'0000']")
-
-
-
+       
         @jsonlist = ['xmlns:xsd', 'xmlns:xsi', 'xmlns', 'ExtData']
         
         @jsonlist.each do |j|
             obj.delete(j)
             
-        end
-        #if(obj['Result'] == "0")
-        #	obj["BatchNum"] = obj["BatchNum"].sub("<BatchNum>000000</BatchNum>","");
-    	#end	
+        end	
 
         return obj
 	end
