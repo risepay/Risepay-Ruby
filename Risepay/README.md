@@ -33,6 +33,10 @@ include the library on your proyect:
 
     require_relative 'risepays.rb'
 
+To utilize this class, Risepay.java into your project, and require it. create a new instance of the class.
+
+     @risepay = Risepays.new("gatewayApiUser","userPassword");
+
   
 ### Sale Transaction
 To make a purchase using a credit card:

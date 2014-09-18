@@ -29,7 +29,7 @@ require 'active_support'
 
 class Risepays
 
-	attr_accessor :UserName, :Password, :url, :defFileds, :info, :RespMSG, :formData
+	attr_accessor :UserName, :Password, :url, :defFileds, :info, :RespMSG, :formData, :resp
 
 
 	def initialize(user,pass)
@@ -41,7 +41,7 @@ class Risepays
 		@formData = [];
 		@url ="https://gateway1.risepay.com/ws/transact.asmx/ProcessCreditCard"
 		@amountFields = ['Amount', 'TipAmt', 'TaxAmt'];
-
+		@resp = ''
 
 	end 	
 
@@ -130,6 +130,10 @@ class Risepays
 
 	end
 
+	def stringStartsWith(haystack, needle)
+		return haystack.index(needle) === 0
+	end
+
 	def prepare()
 
 		@data = {};
@@ -170,66 +174,91 @@ class Risepays
 
 	def convert_response(obj)
 		
-		#ConvertExtData
-		#Split plain data and XML into @matches hash
-		s = obj['ExtData']
-		s = s.match(/([,=0-9a-zA-Z]*)(\<.*\>)?/)
-		@str = s[1]
-		@str2 = s[2]
+		@resp = obj
+		@resp['Approved'] = false
 
+		#Add Approved Value
+        if(@resp['Result'] == "0")
+    		@resp['Approved']= true
 
-		@str.split(",").each do |f|
-			arr = f.split('=');
-			arr[1] && (obj[arr[0]] = arr[1])
-		end
+			#ConvertExtData
+			#Split plain data and XML into @matches hash
+			matches = @resp['ExtData']
+			matches = matches.match(/([,=0-9a-zA-Z]*)(\<.*\>)?/)
+			@str = matches[1]
 
-        #Process XML Part
+			#Process plain text coma separated keypairs
+			@str.split(",").each do |f|
+				arr = f.split('=');
+				arr[1] && (@resp[arr[0]] = arr[1])
+			end
 
-        @xmldata = Hash.from_xml(@str2)
+	        #Process XML Part
+	        if(matches.length == 2)
+	        @xmldata = Hash.from_xml(matches[2])
+	    	
+	        
+		        if @xmldata
+		        	for x in @xmldata
+		        		@resp[x] = @xmldata[x]
+		        	end
+		        end
+		    end    
 
-        
-        if @xmldata
-        	for x in @xmldata
-        		obj[x] = @xmldata[x]
-        	end
         end
-
         @jsonlist = ['xmlns:xsd', 'xmlns:xsi', 'xmlns', 'ExtData']
         
         @jsonlist.each do |j|
-        	obj.delete(j)
+        	@resp.delete(j)
 
         end	
 
-        return obj
+
+    	if(!@resp['Message'])
+    		@resp['Message'] = "";
+    	end
+
+    	if(@resp['RespMSG'])
+    		@resp['Message'] = @resp['Message'] + " " + @resp['RespMSG'];
+    	end
+    	  
+        return @resp
 	end
 
 
     def post(opts)
 
-    	uri = URI.parse(@url)
+    	begin
 
-    	http = Net::HTTP.new(uri.host, uri.port)
-    	http.verify_mode = OpenSSL::SSL::VERIFY_PEER
-    	http.use_ssl = (uri.scheme == "https")
-    	request = Net::HTTP::Post.new(uri.request_uri)
+	    	uri = URI.parse(@url)
 
-    	request.set_form_data(opts);
+	    	http = Net::HTTP.new(uri.host, uri.port)
+	    	http.read_timeout = 120
+	    	http.verify_mode = OpenSSL::SSL::VERIFY_PEER
+	    	http.use_ssl = (uri.scheme == "https")
+	    	request = Net::HTTP::Post.new(uri.request_uri)
 
-    	response = http.request(request)
-    	xml= response.body
-    	session = Hash.from_xml(xml)
-    	res = session['Response']
-    	json = convert_response(res);
+	    	request.set_form_data(opts);
 
-    	approved = false
-    	if(json['Result'] == "0")
-    		approved = true;
+	    	response = http.request(request)
+	    	xml= response.body
+	    	session = Hash.from_xml(xml)
+	    	res = session['Response']
 
-    	end
-    	json['Approved']=approved
-    	return json
+	    	if (stringStartsWith(xml, "<?xml"))
+	    		convert_response(res);
+	    	else
+	    		@resp['Result'] = -999
+	    		@resp['Message'] = "Gateway error" + xml
+	    		return @resp
+	    	end
 
+	    	return @resp
+	    rescue Exception => e
+	    	@resp['Result'] = -999
+	    	@resp['Message'] = "Gateway error" + xml
+	    	return @resp
+	    end
     end
 
 end
